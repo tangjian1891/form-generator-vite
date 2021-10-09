@@ -44,7 +44,7 @@ function change(e) {
   console.log("变化", e);
 }
 
-// 克隆数据 origin 是单个element 数据 且必须有返回值，否则克隆失败，配合 group.pull="clone 使用"
+// 克隆数据 origin 是单个element 数据 且必须有返回值，否则克隆失败
 function cloneFn(origin) {
   console.log(origin);
 

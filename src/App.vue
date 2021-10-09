@@ -3,7 +3,8 @@
     <!-- <Simple></Simple> -->
     <!-- <TwoLists></TwoLists> -->
     <!-- <Clone></Clone> -->
-    <CustomClone></CustomClone>
+    <!-- <CustomClone></CustomClone> -->
+    <CloneOnControl></CloneOnControl>
     <!-- <Left class="left"></Left>
     <Middle class="middle"></Middle>-->
   </div>
@@ -18,6 +19,7 @@ import Simple from "./components/draggable-demo/01Simple.vue";
 import TwoLists from "./components/draggable-demo/02TwoLists.vue";
 import Clone from './components/draggable-demo/03Clone.vue'
 import CustomClone from './components/draggable-demo/04CustomClone.vue'
+import CloneOnControl from './components/draggable-demo/05CloneOnControl.vue'
 </script>
 
 <style>

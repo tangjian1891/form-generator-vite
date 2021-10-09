@@ -6,7 +6,9 @@
     <!-- <CustomClone></CustomClone> -->
     <!-- <CloneOnControl></CloneOnControl> -->
     <!-- <handle></handle> -->
-    <Nested></Nested>
+    <!-- <Nested></Nested> -->
+    <!-- 测试JSX写法 -->
+    <TestJSX></TestJSX>
     <!-- <Left class="left"></Left>
     <Middle class="middle"></Middle>-->
   </div>
@@ -24,6 +26,7 @@ import CustomClone from './components/draggable-demo/04CustomClone.vue'
 import CloneOnControl from './components/draggable-demo/05CloneOnControl.vue'
 import handle from './components/draggable-demo/06Hadnle.vue'
 import Nested from './components/draggable-demo/07Nested.vue'
+import TestJSX from "./components/TestJSX.vue";
 </script>
 
 <style>

@@ -41,4 +41,4 @@ function change(e) {
   console.log("变化", e);
 }
 </script>
-<style lang="scss" scoped></style>
+<style  scoped></style>

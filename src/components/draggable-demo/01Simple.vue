@@ -39,4 +39,4 @@ function add() {
   list.push({ name: "数据"+index++ , id: index });
 }
 </script>
-<style lang="scss" scoped></style>
+<style  scoped></style>

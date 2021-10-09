@@ -3,9 +3,10 @@
   <!-- :clone属性接收一个函数，用来处理克隆数据 -->
   <draggable
     :list="data.list1"
-    :group="{ name: 'people', pull: 'clone', put: false }"
+    :group="{ name: 'people', pull: pullFunction, put: false }"
     :clone="cloneFn"
     @change="change"
+    @start="start"
     item-key="name"
   >
     <template #item="{ element }">
@@ -23,7 +24,7 @@
   </draggable>
 </template>
 <script lang="ts" setup>
-// 自定义克隆数据
+// 自定义克隆数据,根据按键controller决定是拖拽克隆还是移动
 import { reactive } from "@vue/reactivity";
 
 const data = reactive({
@@ -38,6 +39,7 @@ const data = reactive({
     { name: "cat 6", id: 6 },
     { name: "cat 7", id: 7 },
   ],
+  controlOnStart: false,
 });
 
 function change(e) {
@@ -52,6 +54,16 @@ function cloneFn(origin) {
     id: origin.id,
     name: "这是一条狗啊",
   };
+}
+
+// 动态决定是为clone还是可移动,根据返回值决定
+function pullFunction() {
+  return data.controlOnStart ? "clone" : true;
+}
+
+function start(e) {
+  console.log(e);
+  data.controlOnStart = e.originalEvent.ctrlKey; //查看是否有按住controler按钮
 }
 </script>
 <style  scoped></style>

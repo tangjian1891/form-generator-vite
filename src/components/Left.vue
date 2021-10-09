@@ -44,4 +44,4 @@ function cloneComponent(e) {
   return e;
 }
 </script>
-<style lang="scss" scoped></style>
+<style  scoped></style>

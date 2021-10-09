@@ -4,7 +4,9 @@
     <!-- <TwoLists></TwoLists> -->
     <!-- <Clone></Clone> -->
     <!-- <CustomClone></CustomClone> -->
-    <CloneOnControl></CloneOnControl>
+    <!-- <CloneOnControl></CloneOnControl> -->
+    <!-- <handle></handle> -->
+    <Nested></Nested>
     <!-- <Left class="left"></Left>
     <Middle class="middle"></Middle>-->
   </div>
@@ -20,6 +22,8 @@ import TwoLists from "./components/draggable-demo/02TwoLists.vue";
 import Clone from './components/draggable-demo/03Clone.vue'
 import CustomClone from './components/draggable-demo/04CustomClone.vue'
 import CloneOnControl from './components/draggable-demo/05CloneOnControl.vue'
+import handle from './components/draggable-demo/06Hadnle.vue'
+import Nested from './components/draggable-demo/07Nested.vue'
 </script>
 
 <style>

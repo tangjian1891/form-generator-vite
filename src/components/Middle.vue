@@ -22,4 +22,4 @@ const arr2 = reactive([{ id: 12, name: "哈哈1" }]);
 //   return false;
 // }
 </script>
-<style lang="scss" scoped></style>
+<style  scoped></style>

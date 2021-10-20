@@ -1,13 +1,7 @@
 <template>
   <!-- pull 是否允许移出  'clone'属性之后，原数据不会消失，  put 是否允许移入 -->
   <!-- :clone属性接收一个函数，用来处理克隆数据 -->
-  <draggable
-    :list="data.list1"
-    :group="{ name: 'people', pull: 'clone', put: false }"
-    :clone="cloneFn"
-    @change="change"
-    item-key="name"
-  >
+  <draggable :list="data.list1" :group="{ name: 'people', pull: 'clone', put: false }" :clone="cloneFn" @change="change" item-key="name">
     <template #item="{ element }">
       <div class="list-group-item">
         {{ element.name + element.id }}
@@ -45,8 +39,7 @@ function change(e) {
 }
 
 // 克隆数据 origin 是单个element 数据 且必须有返回值，否则克隆失败
-function cloneFn(origin) {
-  console.log(origin);
+async function cloneFn(origin) {
 
   return {
     id: origin.id,
@@ -54,4 +47,4 @@ function cloneFn(origin) {
   };
 }
 </script>
-<style  scoped></style>
+<style scoped></style>

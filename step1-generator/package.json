@@ -1,0 +1,24 @@
+{
+  "name": "init-vite",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vue-tsc --noEmit && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.15.8",
+    "clipboard": "^2.0.8",
+    "element-plus": "^1.1.0-beta.24",
+    "file-saver": "^2.0.5",
+    "vue": "^3.2.16"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^1.9.3",
+    "@vitejs/plugin-vue-jsx": "^1.2.0",
+    "sass": "^1.43.2",
+    "typescript": "^4.4.3",
+    "vite": "^2.6.4",
+    "vue-tsc": "^0.3.0"
+  }
+}

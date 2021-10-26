@@ -1,8 +1,8 @@
 <template>
   <div style="height: 100%">
-    <el-row style="height: 100%; overflow: auto">
+    <el-row>
       <!-- 左侧编辑区域 -->
-      <el-col :md="24" :lg="12" class="left-editor">
+      <el-col :span="12">
         <div class="setting" title="资源引用" @click="showResource">
           <el-badge :is-dot="!!resources.length" class="item">
             <i class="el-icon-setting" />
@@ -43,7 +43,7 @@
       </el-col>
 
       <!-- 右侧预览区域 -->
-      <el-col :md="24" :lg="12" class="right-preview">
+      <el-col :span="12" class="right-preview">
         <div class="action-bar" :style="{ 'text-align': 'left' }">
           <span class="bar-btn" @click="runCode">
             <i class="el-icon-refresh" />
@@ -62,7 +62,7 @@
             关闭
           </span>
         </div>
-        <iframe   ref="previewPageRef" class="result-wrapper" frameborder="0" src="preview.html" @load="iframeLoad" />
+        <iframe ref="previewPageRef" class="result-wrapper" frameborder="0" src="preview.html" @load="iframeLoad" />
         <!-- <div v-show="!isIframeLoaded" v-loading="true" class="result-wrapper" /> -->
       </el-col>
     </el-row>
@@ -74,9 +74,33 @@ import { computed, nextTick, onMounted, reactive, ref, toRaw } from "vue-demi";
 import { parse } from "@babel/parser";
 import { makeUpHtml } from "./utils/generator/html"; //根据数据生成对应的html代码
 import { makeUpJs } from "./utils/generator/js";
-import loadBeautifier from "./utils/loadBeautifier";
-import loadMonaco from "./utils/loadMonaco";
 import { EXPORT_DEFAULT, beautifierConf } from "./utils/util";
+import * as monaco from "monaco-editor";
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === "json") {
+      return new jsonWorker();
+    }
+    if (label === "css" || label === "scss" || label === "less") {
+      return new cssWorker();
+    }
+    if (label === "html" || label === "handlebars" || label === "razor") {
+      return new htmlWorker();
+    }
+    if (label === "typescript" || label === "javascript") {
+      return new tsWorker();
+    }
+    return new editorWorker();
+  },
+};
+import * as beautifier from "js-beautify";
+
+// import './index.css';
 const editorObj: any = {
   html: null,
   js: null,
@@ -88,8 +112,6 @@ const mode = {
   css: "css",
 };
 
-let beautifier: any;
-let monaco: any;
 const formData = reactive({
   fields: [
     {
@@ -146,57 +168,78 @@ const links = reactive([]);
 
 const resources = computed(() => scripts.concat(links));
 
-onMounted(() => {
+onMounted(async () => {
   const { type } = generateConf;
   const htmlCodeStr = makeUpHtml(formData, type);
   const jsCodeStr = makeUpJs(formData, type);
   console.log(htmlCode);
 
   // 加载脚本
-  loadBeautifier((btf) => {
-    beautifier = btf;
-    htmlCode.value = beautifier.html(htmlCodeStr, beautifierConf.html);
-    jsCode.value = beautifier.js(jsCodeStr, beautifierConf.js);
-    loadMonaco((val) => {
-      monaco = val;
-      setEditorValue("editorHtml", "html", htmlCode.value);
-      setEditorValue("editorJs", "js", jsCode.value);
-      // this.setEditorValue("editorCss", "css", this.cssCode);
-      if (!isInitcode.value) {
-        console.log("zhixingl ");
-        isRefreshCode.value = true;
-        console.log(isIframeLoaded.value);
-        
-        // if (isIframeLoaded.value) {
-          isInitcode.value = true;
-          runCode();
-        // }
-      }
-    });
+  htmlCode.value = beautifier.html(htmlCodeStr, beautifierConf.html);
+  jsCode.value = beautifier.js(jsCodeStr, beautifierConf.js);
+  // await setEditorValue("editorHtml", "html", htmlCode.value);
+  let result = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
+    value: htmlCode.value,
+    theme: "vs-dark",
+    language: "html",
+    automaticLayout: true,
   });
+  console.log(result);
+
+  jsCode.value = "  console.log('1234');";
+  console.log(jsCode.value);
+  let result2 = monaco.editor.create(document.querySelector("#editorJs") as HTMLElement, {
+    value: jsCode.value,
+    theme: "vs-dark",
+    language: "javascript",
+    automaticLayout: true,
+  });
+
+  console.log(result2);
+  monaco.editor.create(document.querySelector("#editorCss") as HTMLElement, {
+    value: ".body{color:red;}",
+    theme: "vs-dark",
+    language: "css",
+    automaticLayout: true,
+  });
+  // await setEditorValue("editorJs", "js", jsCode.value);
+  // this.setEditorValue("editorCss", "css", this.cssCode);
+  // if (!isInitcode.value) {
+  //   console.log("zhixingl ");
+  //   isRefreshCode.value = true;
+  //   console.log(isIframeLoaded.value);
+
+  //   // if (isIframeLoaded.value) {
+  //   isInitcode.value = true;
+  //   // runCode();
+  //   // }
+  // }
 });
 
 function showResource() {
   resourceVisible.value = true;
 }
 
-function setEditorValue(id, type, codeStr) {
+async function setEditorValue(id, type, codeStr) {
+  console.log(monaco, monaco.editor);
   if (editorObj[type]) {
-    editorObj[type].setValue(codeStr);
+    await editorObj[type].setValue(codeStr);
   } else {
-    editorObj[type] = monaco.editor.create(document.getElementById(id), {
+    const dom = document.getElementById(id);
+    console.log(dom);
+    editorObj[type] = await monaco.editor.create(dom, {
       value: codeStr,
       theme: "vs-dark",
       language: mode[type],
       automaticLayout: true,
     });
   }
-  // ctrl + s 刷新
-  editorObj[type].onKeyDown((e) => {
-    if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
-      runCode();
-    }
-  });
+  // // ctrl + s 刷新
+  // editorObj[type].onKeyDown((e) => {
+  //   if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
+  //     runCode();
+  //   }
+  // });
 }
 
 async function runCode() {
@@ -267,29 +310,16 @@ function iframeLoad() {
   color: #2c3e50;
   margin-top: 60px;
 }
-
-.tab-editor {
-  position: absolute;
-  top: 33px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  font-size: 14px;
-}
 .left-editor {
-  position: relative;
+  display: block;
   height: 100%;
   background: #1e1e1e;
-  overflow: hidden;
 }
-.setting {
-  position: absolute;
-  right: 15px;
-  top: 3px;
-  color: #a9f122;
-  font-size: 18px;
-  cursor: pointer;
-  z-index: 1;
+.foo {
+  display: block;
+  height: 100%;
+  border: 1px solid red;
+  overflow: hidden !important;
 }
 .right-preview {
   height: 100%;
@@ -301,6 +331,22 @@ function iframeLoad() {
     box-sizing: border-box;
   }
 }
+.tab-editor {
+  height: 800px;
+  font-size: 14px;
+  overflow: hidden !important;
+}
+
+.setting {
+  position: absolute;
+  right: 15px;
+  top: 3px;
+  color: #a9f122;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 1;
+}
+
 @include action-bar;
 ::v-deep .el-drawer__header {
   display: none;

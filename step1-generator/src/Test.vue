@@ -81,8 +81,9 @@ import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+import * as beautifier from "js-beautify";
 self.MonacoEnvironment = {
-  getWorker(_, label) {
+  getWorker(_: any, label: any) {
     if (label === "json") {
       return new jsonWorker();
     }
@@ -98,7 +99,6 @@ self.MonacoEnvironment = {
     return new editorWorker();
   },
 };
-import * as beautifier from "js-beautify";
 
 // import './index.css';
 const editorObj: any = {
@@ -165,7 +165,9 @@ const jsCode = ref("");
 const generateConf = reactive({ fileName: "", type: "file" });
 const scripts = reactive([]);
 const links = reactive([]);
-
+let htmlEditor: any;
+let jsEditor: any;
+let cssEditor: any;
 const resources = computed(() => scripts.concat(links));
 
 onMounted(async () => {
@@ -178,30 +180,38 @@ onMounted(async () => {
   htmlCode.value = beautifier.html(htmlCodeStr, beautifierConf.html);
   jsCode.value = beautifier.js(jsCodeStr, beautifierConf.js);
   // await setEditorValue("editorHtml", "html", htmlCode.value);
-  let result = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
+  htmlEditor = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
     value: htmlCode.value,
     theme: "vs-dark",
     language: "html",
     automaticLayout: true,
   });
-  console.log(result);
+  console.log(htmlEditor);
+  htmlEditor.onKeyDown((e) => {
+    if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
+      console.log("重新运行一下");
+      // runCode();
+      e.preventDefault();
+    }
+  });
 
-  jsCode.value = "  console.log('1234');";
-  console.log(jsCode.value);
-  let result2 = monaco.editor.create(document.querySelector("#editorJs") as HTMLElement, {
+  // console.log(jsCode.value);
+  jsEditor = monaco.editor.create(document.querySelector("#editorJs") as HTMLElement, {
     value: jsCode.value,
     theme: "vs-dark",
     language: "javascript",
     automaticLayout: true,
   });
 
-  console.log(result2);
-  monaco.editor.create(document.querySelector("#editorCss") as HTMLElement, {
+  console.log(jsEditor);
+  cssEditor = monaco.editor.create(document.querySelector("#editorCss") as HTMLElement, {
     value: ".body{color:red;}",
     theme: "vs-dark",
     language: "css",
     automaticLayout: true,
   });
+
+  runCode();
   // await setEditorValue("editorJs", "js", jsCode.value);
   // this.setEditorValue("editorCss", "css", this.cssCode);
   // if (!isInitcode.value) {
@@ -235,18 +245,21 @@ async function setEditorValue(id, type, codeStr) {
     });
   }
   // // ctrl + s 刷新
-  // editorObj[type].onKeyDown((e) => {
-  //   if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
-  //     runCode();
-  //   }
-  // });
+  editorObj[type].onKeyDown((e) => {
+    if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
+      console.log("重新运行一下");
+      // runCode();
+    }
+  });
 }
 
 async function runCode() {
   // debugger
-  const jsCodeStr = editorObj.js.getValue();
+  const jsCodeStr = jsEditor.getValue();
+  console.log(jsCodeStr);
   try {
     const ast = parse(jsCodeStr, { sourceType: "module" });
+    console.log(ast);
     const astBody = ast.program.body;
     if (astBody.length > 1) {
       alert("js格式不能识别，仅支持修改export和default的对象内容");
@@ -276,10 +289,10 @@ async function runCode() {
         // previewPageRef.value.contentWindow.postMessage("1234");
       }, 2000);
     } else {
-      alert("请使用export和default");
+      console.error("请使用export和default");
     }
   } catch (error) {
-    alert(error);
+    console.error(error);
     console.error(error);
   }
 }
@@ -302,14 +315,7 @@ function iframeLoad() {
 
 <style lang="scss">
 @import "./assets/styles/mixin.scss";
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 .left-editor {
   display: block;
   height: 100%;

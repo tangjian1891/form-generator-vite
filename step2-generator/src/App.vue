@@ -1,10 +1,6 @@
 <template>
-<div>
-  zhess
-  <Test />
-</div>
+  <div>
+  </div>
 </template>
-<script lang="ts" setup>
-import Test from "./Test.vue";
-</script>
+<script lang="ts" setup></script>
 <style lang="scss" scoped></style>

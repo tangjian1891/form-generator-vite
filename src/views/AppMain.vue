@@ -13,7 +13,7 @@
 
     <CodeTypeDialog v-model="dialogVisible" title="选择生成类型" :show-file-name="showFileName" @confirm="generate" />
 
-    <FormDrawer v-model="drawerVisible" :form-data="formData" />
+    <!-- <FormDrawer v-model="drawerVisible" :form-data="formData" /> -->
   </div>
 </template>
 
@@ -22,7 +22,7 @@ import Middle from "./Middle.vue";
 import L from "./L.vue";
 import CodeTypeDialog from "../components/dialog/CodeTypeDialog.vue";
 import { reactive, ref } from "vue";
-import FormDrawer from "../components/dialog/FormDrawer.vue";
+// import FormDrawer from "../components/dialog/FormDrawer.vue";
 
 const dialogVisible = ref(false);
 const showFileName = ref(false);

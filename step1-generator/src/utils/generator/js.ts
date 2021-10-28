@@ -145,7 +145,7 @@ function buildData(scheme, dataList) {
   const config = scheme.__config__;
   if (scheme.__vModel__ === undefined) return;
   const defaultValue = JSON.stringify(config.defaultValue);
-  dataList.push(`${scheme.__vModel__}: ${defaultValue},`);
+  dataList.push(`${scheme.__vModel__}: ${defaultValue},`); //拼接对应data数据  key:value
 }
 
 // 构建校验规则

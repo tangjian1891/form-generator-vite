@@ -32,7 +32,8 @@ import { computed, nextTick, onMounted, reactive, ref, toRaw } from "vue-demi";
 import { parse } from "@babel/parser";
 import { makeUpHtml } from "./utils/generator/html"; //根据数据生成对应的html代码
 import { makeUpJs } from "./utils/generator/js";
-import { EXPORT_DEFAULT, beautifierConf } from "./utils/util";
+import { makeUpCss } from "./utils/generator/css";
+import { EXPORT_DEFAULT } from "./utils/util";
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
@@ -40,6 +41,7 @@ import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import * as beautifier from "js-beautify";
+import { formDataConf } from "./utils/config";
 
 self.MonacoEnvironment = {
   getWorker(_: any, label: any) {
@@ -60,15 +62,17 @@ self.MonacoEnvironment = {
 };
 
 const tabList = reactive(["html", "js", "css"]);
+//编辑器实例
 const editorObj: any = {
   html: null,
   js: null,
   css: null,
 };
-const mode = {
-  html: "html",
-  js: "javascript",
-  css: "css",
+// 代码数据
+const codeData = {
+  html: "",
+  js: "",
+  css: "",
 };
 
 const formData = reactive({
@@ -112,59 +116,44 @@ const formData = reactive({
   span: 24,
   formBtns: true,
 });
-const resourceVisible = ref(false);
 const activeTab = ref("html");
 const previewPageRef: any = ref(null);
-const isIframeLoaded = ref(false);
-const isInitcode = ref(false);
-const isRefreshCode = ref(false);
-const htmlCode = ref("");
-const cssCode = ref("");
-const jsCode = ref("");
+
 const generateConf = reactive({ fileName: "", type: "file" });
 const scripts = reactive([]);
 const links = reactive([]);
-let htmlEditor: any;
-let jsEditor: any;
-let cssEditor: any;
-const resources = computed(() => scripts.concat(links));
 
 onMounted(async () => {
   const { type } = generateConf;
-  const htmlCodeStr = makeUpHtml(formData, type);
-  const jsCodeStr = makeUpJs(formData, type);
-  console.log(htmlCode);
-
-  // 加载脚本
-  htmlCode.value = beautifier.html(htmlCodeStr, beautifierConf.html);
-
-  jsCode.value = beautifier.js(jsCodeStr, beautifierConf.js);
-
-  htmlEditor = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
-    value: htmlCode.value,
+  codeData.html = makeUpHtml(formData, type);
+  codeData.js = makeUpJs(formData, type);
+  codeData.css = makeUpCss(formData);
+  // 格式化代码
+  codeData.html = beautifier.html(codeData.html, formDataConf.html);
+  codeData.js = beautifier.js(codeData.js, formDataConf.js);
+  codeData.css = beautifier.css(codeData.css);
+  editorObj.html = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
+    value: codeData.html,
     theme: "vs-dark",
     language: "html",
     automaticLayout: true,
   });
-  console.log(htmlEditor);
-  htmlEditor.onKeyDown((e) => {
+  editorObj.html.onKeyDown((e) => {
     if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
       console.log("重新运行一下");
       e.preventDefault();
     }
   });
 
-  // console.log(jsCode.value);
-  jsEditor = monaco.editor.create(document.querySelector("#editorJs") as HTMLElement, {
-    value: jsCode.value,
+  editorObj.js = monaco.editor.create(document.querySelector("#editorJs") as HTMLElement, {
+    value: codeData.js,
     theme: "vs-dark",
     language: "javascript",
     automaticLayout: true,
   });
 
-  console.log(jsEditor);
-  cssEditor = monaco.editor.create(document.querySelector("#editorCss") as HTMLElement, {
-    value: ".body{color:red;}",
+  editorObj.css = monaco.editor.create(document.querySelector("#editorCss") as HTMLElement, {
+    value: codeData.css,
     theme: "vs-dark",
     language: "css",
     automaticLayout: true,
@@ -173,7 +162,7 @@ onMounted(async () => {
 
 async function runCode() {
   console.log("激活运行，注入代码");
-  const jsCodeStr = jsEditor.getValue();
+  const jsCodeStr = editorObj.js.getValue();
   try {
     const ast = parse(jsCodeStr, { sourceType: "module" });
     const astBody = ast.program.body;
@@ -186,9 +175,9 @@ async function runCode() {
         type: "refreshFrame",
         data: {
           generateConf: toRaw(generateConf),
-          html: htmlEditor.getValue(),
+          html: editorObj.html.getValue(),
           js: jsCodeStr.replace(EXPORT_DEFAULT, ""),
-          css: cssEditor.getValue(),
+          css: editorObj.css.getValue(),
           scripts: toRaw(scripts),
           links: toRaw(links),
         },

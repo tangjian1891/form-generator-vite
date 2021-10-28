@@ -3,40 +3,18 @@
     <el-row>
       <!-- 左侧编辑区域 -->
       <el-col :span="12">
-        <div class="setting" title="资源引用" @click="showResource">
-          <el-badge :is-dot="!!resources.length" class="item">
-            <i class="el-icon-setting" />
-          </el-badge>
-        </div>
         <el-tabs v-model="activeTab" type="card" class="editor-tabs">
-          <el-tab-pane name="html">
+          <el-tab-pane :name="item" v-for="item in tabList" :key="item">
             <template #label>
               <span>
-                <i v-if="activeTab === 'html'" class="el-icon-edit" />
+                <i v-if="activeTab === item" class="el-icon-edit" />
                 <i v-else class="el-icon-document" />
-                template
-              </span>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane name="js">
-            <template #label>
-              <span>
-                <i v-if="activeTab === 'js'" class="el-icon-edit" />
-                <i v-else class="el-icon-document" />
-                script
-              </span>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane name="css">
-            <template #label>
-              <span>
-                <i v-if="activeTab === 'css'" class="el-icon-edit" />
-                <i v-else class="el-icon-document" />
-                css
+                {{ item }}
               </span>
             </template>
           </el-tab-pane>
         </el-tabs>
+        <!-- 三块代码渲染序曲 -->
         <div v-show="activeTab === 'html'" id="editorHtml" class="tab-editor" />
         <div v-show="activeTab === 'js'" id="editorJs" class="tab-editor" />
         <div v-show="activeTab === 'css'" id="editorCss" class="tab-editor" />
@@ -44,29 +22,9 @@
 
       <!-- 右侧预览区域 -->
       <el-col :span="12" class="right-preview">
-        <div class="action-bar" :style="{ 'text-align': 'left' }">
-          <span class="bar-btn" @click="runCode">
-            <i class="el-icon-refresh" />
-            刷新
-          </span>
-          <!-- <span class="bar-btn" @click="exportFile">
-            <i class="el-icon-download" />
-            导出vue文件
-          </span> -->
-          <span ref="copyBtn" class="bar-btn copy-btn">
-            <i class="el-icon-document-copy" />
-            复制代码
-          </span>
-          <span class="bar-btn delete-btn" @click="$emit('update:visible', false)">
-            <i class="el-icon-circle-close" />
-            关闭
-          </span>
-        </div>
-        <iframe ref="previewPageRef" class="result-wrapper" frameborder="0" src="preview.html" @load="iframeLoad" />
-        <!-- <div v-show="!isIframeLoaded" v-loading="true" class="result-wrapper" /> -->
+        <iframe ref="previewPageRef" class="result-wrapper" frameborder="0" src="preview.html" @load="runCode" />
       </el-col>
     </el-row>
-    <button @click="foo">点击触发</button>
   </div>
 </template>
 <script setup lang="ts">
@@ -82,6 +40,7 @@ import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import * as beautifier from "js-beautify";
+
 self.MonacoEnvironment = {
   getWorker(_: any, label: any) {
     if (label === "json") {
@@ -100,7 +59,7 @@ self.MonacoEnvironment = {
   },
 };
 
-// import './index.css';
+const tabList = reactive(["html", "js", "css"]);
 const editorObj: any = {
   html: null,
   js: null,
@@ -178,8 +137,9 @@ onMounted(async () => {
 
   // 加载脚本
   htmlCode.value = beautifier.html(htmlCodeStr, beautifierConf.html);
+
   jsCode.value = beautifier.js(jsCodeStr, beautifierConf.js);
-  // await setEditorValue("editorHtml", "html", htmlCode.value);
+
   htmlEditor = monaco.editor.create(document.querySelector("#editorHtml") as HTMLElement, {
     value: htmlCode.value,
     theme: "vs-dark",
@@ -190,7 +150,6 @@ onMounted(async () => {
   htmlEditor.onKeyDown((e) => {
     if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
       console.log("重新运行一下");
-      // runCode();
       e.preventDefault();
     }
   });
@@ -210,56 +169,13 @@ onMounted(async () => {
     language: "css",
     automaticLayout: true,
   });
-
-  runCode();
-  // await setEditorValue("editorJs", "js", jsCode.value);
-  // this.setEditorValue("editorCss", "css", this.cssCode);
-  // if (!isInitcode.value) {
-  //   console.log("zhixingl ");
-  //   isRefreshCode.value = true;
-  //   console.log(isIframeLoaded.value);
-
-  //   // if (isIframeLoaded.value) {
-  //   isInitcode.value = true;
-  //   // runCode();
-  //   // }
-  // }
 });
 
-function showResource() {
-  resourceVisible.value = true;
-}
-
-async function setEditorValue(id, type, codeStr) {
-  console.log(monaco, monaco.editor);
-  if (editorObj[type]) {
-    await editorObj[type].setValue(codeStr);
-  } else {
-    const dom = document.getElementById(id);
-    console.log(dom);
-    editorObj[type] = await monaco.editor.create(dom, {
-      value: codeStr,
-      theme: "vs-dark",
-      language: mode[type],
-      automaticLayout: true,
-    });
-  }
-  // // ctrl + s 刷新
-  editorObj[type].onKeyDown((e) => {
-    if (e.keyCode === 49 && (e.metaKey || e.ctrlKey)) {
-      console.log("重新运行一下");
-      // runCode();
-    }
-  });
-}
-
 async function runCode() {
-  // debugger
+  console.log("激活运行，注入代码");
   const jsCodeStr = jsEditor.getValue();
-  console.log(jsCodeStr);
   try {
     const ast = parse(jsCodeStr, { sourceType: "module" });
-    console.log(ast);
     const astBody = ast.program.body;
     if (astBody.length > 1) {
       alert("js格式不能识别，仅支持修改export和default的对象内容");
@@ -270,45 +186,19 @@ async function runCode() {
         type: "refreshFrame",
         data: {
           generateConf: toRaw(generateConf),
-          // generateConf:{name:123},
-          html: editorObj.html.getValue(),
+          html: htmlEditor.getValue(),
           js: jsCodeStr.replace(EXPORT_DEFAULT, ""),
-          // css: editorObj.css.getValue(),
-          css: "123",
+          css: cssEditor.getValue(),
           scripts: toRaw(scripts),
           links: toRaw(links),
         },
       };
-      console.log("执行了鼎是");
-
-      setTimeout(() => {
-        previewPageRef.value.contentWindow.postMessage(postData, location.origin);
-        console.log("执行一下");
-
-        // previewPageRef.value.contentWindow.postMessage("1231313");
-        // previewPageRef.value.contentWindow.postMessage("1234");
-      }, 2000);
+      previewPageRef.value.contentWindow.postMessage(postData, location.origin);
     } else {
       console.error("请使用export和default");
     }
   } catch (error) {
     console.error(error);
-    console.error(error);
-  }
-}
-
-function foo() {
-  console.log(previewPageRef.value);
-
-  previewPageRef.value.contentWindow.postMessage("1231313");
-
-  // previewPageRef.value.contentWindow.postMessage(postData, location.origin);
-}
-
-function iframeLoad() {
-  if (!isInitcode.value) {
-    isIframeLoaded.value = true;
-    isRefreshCode.value && (isInitcode.value = true) && runCode;
   }
 }
 </script>

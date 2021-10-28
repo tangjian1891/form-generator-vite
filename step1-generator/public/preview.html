@@ -7,12 +7,7 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
     <title>form-generator-preview</title>
     <script src="https://unpkg.com/vue@next"></script>
-    <!-- <link href="https://lib.baomitu.com/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet" /> -->
-    <!-- <script src="https://lib.baomitu.com/vue/2.6.11/vue.min.js"></script> -->
-    <!-- <script src="https://lib.baomitu.com/vue-router/3.1.3/vue-router.min.js"></script> -->
-    <!-- <script src="https://lib.baomitu.com/element-ui/2.13.2/index.js"></script> -->
-     <!-- Import style -->
-  <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
     <script src="//cdn.jsdelivr.net/npm/element-plus"></script>
     <style>
       body {
@@ -39,7 +34,7 @@
     </noscript>
     3133
     <div id="previewApp"></div>
- 
+
     <script>
       const $previewApp = document.getElementById("previewApp");
       const childAttrs = {
@@ -47,7 +42,7 @@
         dialog: ' width="600px" class="dialog-width" v-if="visible" :visible.sync="visible" :modal-append-to-body="false" ',
       };
       window.addEventListener("message", (event) => {
-        console.log(event.data);
+        console.log(event.data, "拿到数据了");
         if (event.data.type === "refreshFrame") {
           console.log("进入触发了", event.data);
           const code = event.data.data;
@@ -69,25 +64,10 @@
       });
 
       function newVue(attrs, main, html) {
-        console.log(html);
-        
         main = eval(`(${main})`);
-        
         console.log(main);
         main.template = `<div>${html}</div>`;
-        // main.template = `<div><el-button>Default</el-button></div>`;
-        // main.template = `<div>123</div>`;
-        console.log("开始渲染了，吗");
-        Vue.createApp({
-          data() {
-            return {
-              visible: true,
-              msg: "渲染了吗",
-            };
-          },
-          template: main.template,
-          // computed: { child: main },
-        }).use(ElementPlus).mount("#previewApp");
+        Vue.createApp(main).use(ElementPlus).mount("#previewApp");
       }
 
       function buildLinks(links) {

@@ -1,7 +1,8 @@
 <template>
-  <div>
+  <div v-for="configs in allComponents">
+    <p>{{ configs.title }}</p>
     <draggable
-      :list="configs"
+      :list="configs.list"
       :group="{ name: 'people', pull: 'clone', put: false }"
       :clone="cloneFn"
       @change="change"
@@ -17,11 +18,24 @@
 
 <script lang="ts" setup>
 import { DefineConfig } from "../interface/configs.interface";
-import { configs } from "../utils/configs";
+import { inputComponents, layoutComponents, selectComponents } from "../utils/configs";
 
-function cloneFn(config:DefineConfig) {
-  
-  return  JSON.parse(JSON.stringify(config))
+const allComponents = [
+  {
+    title: "输入型组件",
+    list: inputComponents,
+  },
+  {
+    title: "选择型组件",
+    list: selectComponents,
+  },
+  {
+    title: "布局型组件",
+    list: layoutComponents,
+  },
+];
+function cloneFn(config: DefineConfig) {
+  return JSON.parse(JSON.stringify(config));
 }
 
 function change() {}

@@ -1,7 +1,6 @@
 import { DefineConfig } from "../../interface/configs.interface";
 
 export default (h, conf: DefineConfig) => {
-  console.log(conf.__slot__.prepend);
 
   return {
     prepend: () => {

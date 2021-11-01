@@ -1,13 +1,10 @@
 <template>
-  <div>
-    <el-button @click="run">运行</el-button>
-  </div>
   <div class="content">
     <div class="l">
       <L />
     </div>
     <div class="middle">
-      <Middle  ref="midlleRef" />
+      <Middle ref="midlleRef" />
     </div>
     <div class="r"></div>
 
@@ -44,7 +41,7 @@ function execRun(data) {
   // 处理数据
   // this.
   console.log(midlleRef.value);
-  
+
   drawerVisible.value = true;
 }
 </script>

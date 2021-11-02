@@ -1,8 +1,7 @@
 import { DefineConfig } from "../../interface/configs.interface";
 
 export default (h, conf: DefineConfig) => {
-
-  return {
+  let slots = {
     prepend: () => {
       return <div>{conf.__slot__.prepend}</div>;
     },
@@ -10,4 +9,7 @@ export default (h, conf: DefineConfig) => {
       return <div>{conf.__slot__.append}</div>;
     },
   };
+
+
+  return slots;
 };

@@ -22,34 +22,29 @@ export default defineComponent({
   // context :attrs emit expost slots
   setup(props, context) {
     const conf: DefineConfig = props.conf;
-    const dataObject = makeDataObject();
+    // 插槽处理
     let children: any = {};
     const slotsFn = componentChild[conf.__config__.tag];
     slotsFn && (children = slotsFn(h, conf)); //产出对应插槽
+    for (const key in children) {
+      if (!conf.__slot__[key]) {
+        delete children[key];
+      }
+    }
 
-    buildDataObject(conf, dataObject);
+    let dataObject = makeDataObject();
+    buildDataObject(conf, dataObject); //快速合并数据
     return () => {
-      console.log(props.conf);
+      console.log(dataObject, children);
       return h(resolveComponent(props.conf?.__config__?.tag), dataObject, children);
     };
   },
 });
-
+// https://v3.cn.vuejs.org/guide/migration/render-function-api.html#vnode-prop-格式化
 function makeDataObject() {
   return {
-    class: {},
-    style: {},
-    attrs: {},
-    props: {},
-    domProps: {},
-    on: {},
-    nativeOn: {},
-    directives: [],
-    scopedSlots: {},
-    slot: null,
-    key: null,
-    ref: null,
-    refInFor: true,
+    class: [],
+    style: [],
   };
 }
 
@@ -60,24 +55,11 @@ function buildDataObject(conf: DefineConfig, dataObject) {
       dataObject.props.value = conf.__config__.defaultValue;
       dataObject.on.input = (value: any) => emits("value", value); //绑定input
       return;
-    }
-    // dataObject上是否有手动定义这个属性
-    if (dataObject[key] !== undefined) {
-      if (
-        dataObject[key] === null ||
-        dataObject[key] instanceof RegExp ||
-        ["boolean", "string", "number", "function"].includes(typeof dataObject[key])
-      ) {
-        dataObject[key] = val; //null 正则 基本类型 +函数 属性直接赋值
-      } else if (Array.isArray(dataObject[key])) {
-        dataObject[key] = [...dataObject[key], ...val]; //合并数组
-      } else {
-        // 剩下的就是纯对象
-        dataObject[key] = { ...dataObject[key], ...val }; //合并对象
-      }
+    } else if (["class", "style"].includes(key)) {
+      dataObject[key].push(val);
     } else {
       // 所有没有定义的属性，全部放入attrs中
-      dataObject.attrs[key] = val;
+      dataObject[key] = val;
     }
   });
 }

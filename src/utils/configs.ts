@@ -11,7 +11,7 @@ export const inputComponents: DefineConfig[] = [
       changeTag: true,
       tag: "el-input",
       tagIcon: "input",
-      defaultValue: undefined,
+      defaultValue: "",
       required: true,
       layout: "colFormItem",
       span: 24,

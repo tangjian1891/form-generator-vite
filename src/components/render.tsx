@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, resolveComponent, defineEmits } from "vue-demi";
+import { defineComponent, h, PropType, resolveComponent, defineEmits, computed, ref } from "vue-demi";
 import { DefineConfig } from "../interface/configs.interface";
 const emits = defineEmits(["value"]);
 const modules = import.meta.globEager("./slots/*.tsx");
@@ -31,12 +31,40 @@ export default defineComponent({
         delete children[key];
       }
     }
+    const value = ref("");
 
-    let dataObject = makeDataObject();
-    buildDataObject(conf, dataObject); //快速合并数据
+    const renderAttrs = computed(() => {
+      let dataObject = makeDataObject();
+      console.log("每次都变化吗");
+      Object.keys(conf).forEach((key) => {
+        const val = conf[key];
+        if (key === "__vModel__") {
+          dataObject.props.value = conf.__config__.defaultValue;
+          dataObject.on.input = (value: any) => emits("value", value); //绑定input
+          return;
+        } else if (["class", "style"].includes(key)) {
+          console.log(dataObject, dataObject[key]);
+          dataObject[key].push(val);
+        } else {
+          // 所有没有定义的属性，全部放入attrs中
+          dataObject[key] = val;
+        }
+      });
+
+      dataObject["modelValue"] = dataObject.__config__.defaultValue
+      dataObject["onUpdate:modelValue"] = function (e) {
+        dataObject.__config__.defaultValue = e;
+        // renderAttrs['modelValue']=dataObject.__config__.defaultValue
+      };
+      // dataObject["v-model"] = value;
+      // dataObject["onUpdate:modelValue"] = function (e) {
+      //   value.value = e;
+      // };
+      return dataObject;
+    });
+    console.log(renderAttrs);
     return () => {
-      console.log(dataObject, children);
-      return h(resolveComponent(props.conf?.__config__?.tag), dataObject, children);
+      return h(resolveComponent(props.conf?.__config__?.tag), renderAttrs.value, children);
     };
   },
 });
@@ -46,20 +74,4 @@ function makeDataObject() {
     class: [],
     style: [],
   };
-}
-
-function buildDataObject(conf: DefineConfig, dataObject) {
-  Object.keys(conf).forEach((key) => {
-    const val = conf[key];
-    if (key === "__vModel__") {
-      dataObject.props.value = conf.__config__.defaultValue;
-      dataObject.on.input = (value: any) => emits("value", value); //绑定input
-      return;
-    } else if (["class", "style"].includes(key)) {
-      dataObject[key].push(val);
-    } else {
-      // 所有没有定义的属性，全部放入attrs中
-      dataObject[key] = val;
-    }
-  });
 }

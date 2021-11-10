@@ -5,7 +5,7 @@
         <el-row>
           <!-- <el-col :span="24" @click="emits('updateActiveData', element)"> -->
           <el-col :span="24" @click="emits('updateActiveData', element)">
-            <el-form-item :label="element.__config__.label">
+            <el-form-item :label="element.__config__.showLabel?element.__config__.label:''">
               <div class="list-group-item">
                 <render :conf="element"> </render>
                 <div>{{element.placeholder}}</div>

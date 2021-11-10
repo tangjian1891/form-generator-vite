@@ -39,7 +39,7 @@ export interface Config {
   dataConsumer?: string;
   dataPath?: string;
   url?: string;
-  defaultValue?: null;
+  defaultValue?: any;
   required?: boolean;
   layout?: string;
   span?: number;

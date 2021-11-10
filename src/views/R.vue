@@ -18,8 +18,14 @@
     <el-form-item label="后缀">
       <el-input v-model="activeData.append" placeholder="请输入后缀" />
     </el-form-item>
-    <el-form-item label="默认值">
+    <el-form-item label="默认值" v-if="activeData.__config__">
       <el-input v-model="activeData.__config__.defaultValue" placeholder="请输入后缀" />
+    </el-form-item>
+    <el-form-item label="显示label" v-if="activeData.__config__">
+      <el-switch v-model="activeData.__config__.showLabel" />
+    </el-form-item>
+    <el-form-item label="辅助文字" v-if="activeData.__config__&&activeData.__config__['show-text']">
+      <el-switch v-model="activeData.__config__['show-text']" />
     </el-form-item>
   </el-form>
 </template>
@@ -35,5 +41,4 @@ const props = defineProps({
     type: String,
   },
 });
- 
 </script>
